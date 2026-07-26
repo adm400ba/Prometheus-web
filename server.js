@@ -21,13 +21,12 @@ app.post('/api/obfuscate', (req, res) => {
 
     fs.writeFileSync(inputPath, code);
 
-    const localCli = path.join(__dirname, 'bin', 'prometheus-cli');
+    const localCli = path.join(__dirname, 'bin', 'prometheus-lua');
     const cliCommand = fs.existsSync(localCli) ? localCli : 'prometheus-lua';
 
     let command = `${cliCommand} --preset ${preset || 'Medium'} --out "${outputPath}" "${inputPath}"`;
     if (seed) command += ` --seed ${seed}`;
 
-    // Adiciona a pasta bin local ao PATH para que o Prometheus ache o interpretador Lua
     const env = Object.assign({}, process.env);
     const binPath = path.join(__dirname, 'bin');
     env.PATH = `${binPath}:${env.PATH}`;

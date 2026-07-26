@@ -3,197 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prometheus Obfuscator</title>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <title>Prometheus Web Obfuscator</title>
     <style>
-        :root {
-            --bg-color: #0f1115;
-            --panel-bg: #1a1d24;
-            --primary: #6366f1;
-            --primary-hover: #4f46e5;
-            --success: #10b981;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --border: #2d313a;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-        body { background-color: var(--bg-color); color: var(--text-main); padding: 2rem; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
-        
-        .container { width: 100%; max-width: 1200px; background: var(--panel-bg); border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow: hidden; }
-        .header { padding: 1.5rem 2rem; border-bottom: 1px solid var(--border); text-align: center; }
-        .header h1 { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
-        
-        .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; padding: 1.5rem 2rem; background: #15171c; }
-        .control-group { display: flex; flex-direction: column; gap: 0.5rem; }
-        .control-group label { font-size: 0.85rem; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
-        
-        select, input { background: var(--bg-color); color: var(--text-main); border: 1px solid var(--border); padding: 0.75rem; border-radius: 6px; font-size: 0.95rem; outline: none; transition: border 0.2s; }
-        select:focus, input:focus { border-color: var(--primary); }
-        
-        .editors { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border-bottom: 1px solid var(--border); }
-        .editor-container { background: var(--panel-bg); display: flex; flex-direction: column; }
-        .editor-header { padding: 0.75rem 2rem; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: #1c1f26; border-bottom: 1px solid var(--border); }
-        
-        /* Upload Area Styles */
-        .upload-area { height: 400px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; text-align: center; background: var(--panel-bg); border: 2px dashed var(--border); margin: 1.5rem; border-radius: 8px; transition: border 0.2s, background 0.2s; }
-        .upload-area:hover { border-color: var(--primary); background: #1f232b; }
-        .upload-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.7; }
-        
-        textarea { width: 100%; height: 400px; background: var(--panel-bg); color: #a5b4fc; border: none; padding: 1.5rem 2rem; font-family: 'Fira Code', monospace; font-size: 0.9rem; resize: none; outline: none; }
-        
-        .actions { padding: 1.5rem 2rem; display: flex; justify-content: space-between; align-items: center; background: var(--panel-bg); gap: 1rem; flex-wrap: wrap; }
-        .main-btn { background: var(--primary); color: white; border: none; padding: 0.85rem 2.5rem; border-radius: 6px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: background 0.2s; flex-grow: 1; max-width: 300px; }
-        .main-btn:hover { background: var(--primary-hover); }
-        .main-btn:disabled { background: #475569; cursor: not-allowed; }
-        
-        .output-actions { display: flex; gap: 1rem; display: none; }
-        .secondary-btn { background: var(--bg-color); color: var(--text-main); border: 1px solid var(--border); padding: 0.75rem 1.5rem; border-radius: 6px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
-        .secondary-btn:hover { border-color: var(--text-muted); }
-        .btn-success { background: var(--success); border-color: var(--success); color: #fff; }
-
-        @media (max-width: 800px) {
-            body { padding: 1rem; }
-            .editors { grid-template-columns: 1fr; }
-            .upload-area, textarea { height: 250px; margin: 1rem; width: auto; }
-            .actions { flex-direction: column; align-items: stretch; }
-            .main-btn { max-width: 100%; }
-            .output-actions { width: 100%; justify-content: stretch; }
-            .output-actions button { flex: 1; }
-        }
+        body { font-family: sans-serif; background: #0f172a; color: #f8fafc; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        .container { width: 100%; max-width: 900px; background: #1e293b; padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+        h1 { margin-top: 0; font-size: 1.8rem; color: #38bdf8; text-align: center; }
+        .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .control-group { display: flex; flex-direction: column; }
+        label { font-size: 0.85rem; margin-bottom: 5px; color: #94a3b8; }
+        select, input { padding: 10px; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: #fff; font-size: 0.95rem; }
+        .editors { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        @media(max-width: 768px) { .editors { grid-template-columns: 1fr; } }
+        .editor-box { display: flex; flex-direction: column; }
+        textarea { width: 100%; height: 350px; background: #0f172a; color: #38bdf8; border: 1px solid #334155; border-radius: 8px; padding: 15px; font-family: monospace; font-size: 0.9rem; resize: vertical; box-sizing: border-box; }
+        button { background: #38bdf8; color: #0f172a; border: none; padding: 12px; font-size: 1rem; font-weight: bold; border-radius: 8px; cursor: pointer; transition: background 0.2s; width: 100%; }
+        button:hover { background: #0ea5e9; }
+        .error { color: #f87171; margin-top: 10px; text-align: center; }
     </style>
 </head>
 <body>
-
-<div class="container">
-    <div class="header">
-        <h1>Prometheus Luau Obfuscator</h1>
-    </div>
-
-    <div class="controls">
-        <div class="control-group">
-            <label>Nível de Ofuscação</label>
-            <select id="preset">
-                <option value="Weak">Weak (Fraco)</option>
-                <option value="Medium" selected>Medium (Recomendado)</option>
-                <option value="Strong">Strong (Forte/Lento)</option>
-            </select>
-        </div>
-        <div class="control-group">
-            <label>Seed Customizada (Opcional)</label>
-            <input type="text" id="seed" placeholder="Deixe em branco para aleatório">
-        </div>
-    </div>
-
-    <div class="editors">
-        <div class="editor-container">
-            <div class="editor-header">1. SELECIONE O ARQUIVO (.LUA)</div>
-            <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
-                <div class="upload-icon">📁</div>
-                <h3 id="fileName" style="margin-bottom: 10px;">Nenhum arquivo selecionado</h3>
-                <p style="color: var(--text-muted); font-size: 0.85rem;">Clique para selecionar ou arraste um arquivo</p>
-                <input type="file" id="fileInput" accept=".lua,.txt" style="display: none;">
+    <div class="container">
+        <h1>Prometheus Web Obfuscator</h1>
+        <div class="controls">
+            <div class="control-group">
+                <label for="luaVersion">Versão do Lua</label>
+                <select id="luaVersion">
+                    <option value="Luau">Luau (Roblox)</option>
+                    <option value="Lua51">Lua 5.1</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label for="preset">Preset</label>
+                <select id="preset">
+                    <option value="Low">Low</option>
+                    <option value="Medium" selected>Medium</option>
+                    <option value="High">High</option>
+                    <option value="Strong">Strong</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label for="seed">Seed (Opcional)</label>
+                <input type="number" id="seed" placeholder="Ex: 12345">
             </div>
         </div>
-        <div class="editor-container">
-            <div class="editor-header">2. RESULTADO OFUSCADO</div>
-            <textarea id="outputCode" readonly placeholder="O código protegido aparecerá aqui após o processamento..."></textarea>
+        <div class="editors">
+            <div class="editor-box">
+                <label>Código Original</label>
+                <textarea id="inputCode" placeholder="Cole seu código aqui..."></textarea>
+            </div>
+            <div class="editor-box">
+                <label>Código Ofuscado</label>
+                <textarea id="outputCode" readonly placeholder="O resultado aparecerá aqui..."></textarea>
+            </div>
         </div>
+        <button id="obfuscateBtn">Ofuscar Código</button>
+        <div id="errorMessage" class="error"></div>
     </div>
-
-    <div class="actions">
-        <button class="main-btn" id="obfuscateBtn" onclick="obfuscateCode()">Ofuscar Arquivo</button>
-        
-        <div class="output-actions" id="outputActions">
-            <button class="secondary-btn" id="copyBtn" onclick="copyCode()">Copiar Código</button>
-            <button class="secondary-btn btn-success" id="downloadBtn" onclick="downloadCode()">Baixar Script</button>
-        </div>
-    </div>
-</div>
-
-<script>
-    let currentFileContent = "";
-    let originalFileName = "script";
-
-    // Lida com a seleção do arquivo
-    document.getElementById('fileInput').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-        
-        document.getElementById('fileName').innerText = file.name;
-        document.getElementById('fileName').style.color = 'var(--primary)';
-        originalFileName = file.name.replace(/\.[^/.]+$/, ""); // Pega o nome sem extensão
-        
-        const reader = new FileReader();
-        reader.onload = function(evt) {
-            currentFileContent = evt.target.result;
-        };
-        reader.readAsText(file);
-    });
-
-    async function obfuscateCode() {
-        const preset = document.getElementById('preset').value;
-        const seed = document.getElementById('seed').value;
-        const btn = document.getElementById('obfuscateBtn');
-        const outputCode = document.getElementById('outputCode');
-        const outputActions = document.getElementById('outputActions');
-
-        if (!currentFileContent) {
-            return alert("Por favor, selecione um arquivo .lua primeiro clicando na área de upload.");
-        }
-
-        btn.disabled = true;
-        btn.innerText = "Processando...";
-        outputCode.value = "Ofuscando no servidor...\nIsso pode levar alguns segundos dependendo do tamanho do arquivo.";
-        outputActions.style.display = "none";
-
-        try {
-            const response = await fetch('/api/obfuscate', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ code: currentFileContent, preset: preset, seed: seed })
-            });
-
-            const data = await response.json();
-
-            if (data.error) {
-                outputCode.value = "ERRO: " + data.error;
-            } else {
-                outputCode.value = data.obfuscatedCode;
-                outputActions.style.display = "flex"; 
+    <script>
+        document.getElementById('obfuscateBtn').addEventListener('click', async () => {
+            const code = document.getElementById('inputCode').value;
+            const luaVersion = document.getElementById('luaVersion').value;
+            const preset = document.getElementById('preset').value;
+            const seed = document.getElementById('seed').value;
+            const errorDiv = document.getElementById('errorMessage');
+            const outputArea = document.getElementById('outputCode');
+            errorDiv.textContent = '';
+            outputArea.value = 'Processando...';
+            try {
+                const response = await fetch('/api/obfuscate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code, luaVersion, preset, seed })
+                });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || 'Erro desconhecido');
+                outputArea.value = data.obfuscatedCode;
+            } catch (err) {
+                outputArea.value = '';
+                errorDiv.textContent = err.message;
             }
-        } catch (err) {
-            outputCode.value = "Falha de conexão com o servidor. Tente novamente.";
-        }
-
-        btn.disabled = false;
-        btn.innerText = "Ofuscar Arquivo";
-    }
-
-    function copyCode() {
-        const output = document.getElementById('outputCode');
-        output.select();
-        document.execCommand('copy');
-        
-        const copyBtn = document.getElementById('copyBtn');
-        copyBtn.innerText = "Copiado!";
-        setTimeout(() => copyBtn.innerText = "Copiar Código", 2000);
-    }
-
-    function downloadCode() {
-        const output = document.getElementById('outputCode').value;
-        const blob = new Blob([output], { type: 'text/plain' });
-        const url = URL.createObjectURL(blob);
-        
-        const a = document.createElement('a');
-        a.href = url;
-        // Salva o arquivo com _obfuscated no final (ex: meujogo_obfuscated.lua)
-        a.download = `${originalFileName}_obfuscated.lua`; 
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    }
-</script>
+        });
+    </script>
 </body>
 </html>

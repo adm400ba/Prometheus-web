@@ -4,7 +4,7 @@
   "description": "Interface Web para Prometheus Lua Obfuscator",
   "main": "server.js",
   "scripts": {
-    "build": "apt-get update && apt-get install -y lua5.1 && curl -fsSL https://raw.githubusercontent.com/prometheus-lua/Prometheus/master/install.sh | sh && cp -L ~/.local/bin/prometheus-lua ./prometheus-cli && chmod +x ./prometheus-cli",
+    "build": "mkdir -p bin && curl -R -O https://www.lua.org/ftp/lua-5.1.5.tar.gz && tar zxf lua-5.1.5.tar.gz && cd lua-5.1.5 && make linux && cp src/lua ../bin/lua && cd .. && rm -rf lua-5.1.5 lua-5.1.5.tar.gz && curl -fsSL https://raw.githubusercontent.com/prometheus-lua/Prometheus/master/install.sh | sh && cp -L ~/.local/bin/prometheus-lua ./bin/prometheus-cli && chmod +x ./bin/*",
     "start": "node server.js"
   },
   "dependencies": {

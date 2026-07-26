@@ -11,7 +11,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.static('public'));
 
 app.post('/api/obfuscate', (req, res) => {
-    const { code, preset, seed } = req.body;
+    const { code, preset, seed, luaVersion } = req.body;
 
     if (!code) return res.status(400).json({ error: "Código ausente." });
 
@@ -21,20 +21,24 @@ app.post('/api/obfuscate', (req, res) => {
 
     fs.writeFileSync(inputPath, code);
 
-    // Caminhos absolutos cravados dentro da sua pasta do projeto
     const luaBin = path.join(__dirname, 'bin', 'lua');
     const prometheusCli = path.join(__dirname, 'prometheus', 'cli.lua');
 
-    // Executamos diretamente: ./bin/lua ./prometheus/cli.lua
-    let command = `"${luaBin}" "${prometheusCli}" --preset ${preset || 'Medium'} --out "${outputPath}" "${inputPath}"`;
+    let command = `"${luaBin}" "${prometheusCli}"`;
+
+    if (luaVersion && luaVersion.toLowerCase() === 'luau') {
+        command += ` --LuaU`;
+    }
+
+    command += ` --preset ${preset || 'Medium'} --out "${outputPath}" "${inputPath}"`;
     if (seed) command += ` --seed ${seed}`;
 
     exec(command, (error, stdout, stderr) => {
         if (fs.existsSync(inputPath)) fs.unlinkSync(inputPath);
 
         if (error) {
-            console.error(`Erro de execução: ${stderr || error.message}`);
-            return res.status(500).json({ error: "Falha na ofuscação. Verifique a sintaxe do seu script." });
+            console.error(`Erro: ${stderr || error.message}`);
+            return res.status(500).json({ error: stderr || "Falha na ofuscação." });
         }
 
         if (fs.existsSync(outputPath)) {

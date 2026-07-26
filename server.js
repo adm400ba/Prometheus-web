@@ -3,6 +3,7 @@ const { exec } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const os = require('os'); // Adicionado para pegar a pasta home do sistema
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -21,15 +22,17 @@ app.post('/api/obfuscate', (req, res) => {
 
     fs.writeFileSync(inputPath, code);
 
-    const localCli = path.join(__dirname, 'bin', 'prometheus-lua');
-    const cliCommand = fs.existsSync(localCli) ? localCli : 'prometheus-lua';
-
-    let command = `${cliCommand} --preset ${preset || 'Medium'} --out "${outputPath}" "${inputPath}"`;
+    // O comando agora chama o prometheus-lua direto, pois ele estará no PATH
+    let command = `prometheus-lua --preset ${preset || 'Medium'} --out "${outputPath}" "${inputPath}"`;
     if (seed) command += ` --seed ${seed}`;
 
+    // Configura o PATH para achar o interpretador Lua (no ./bin local) 
+    // e o Prometheus (na pasta .local/bin padrão do Render)
     const env = Object.assign({}, process.env);
-    const binPath = path.join(__dirname, 'bin');
-    env.PATH = `${binPath}:${env.PATH}`;
+    const localBinPath = path.join(__dirname, 'bin');
+    const renderBinPath = path.join(os.homedir(), '.local', 'bin');
+    
+    env.PATH = `${localBinPath}:${renderBinPath}:${env.PATH}`;
 
     exec(command, { env }, (error, stdout, stderr) => {
         if (fs.existsSync(inputPath)) fs.unlinkSync(inputPath);

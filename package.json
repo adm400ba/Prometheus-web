@@ -4,8 +4,8 @@
   "description": "Interface Web para Prometheus Lua Obfuscator",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "build": "curl -fsSL https://raw.githubusercontent.com/prometheus-lua/Prometheus/master/install.sh | sh"
+    "start": "curl -fsSL https://raw.githubusercontent.com/prometheus-lua/Prometheus/master/install.sh | sh && node server.js",
+    "build": "echo 'Build concluido'"
   },
   "dependencies": {
     "express": "^4.18.2"

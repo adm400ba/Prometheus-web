@@ -3,17 +3,21 @@ const { exec } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const multer = require('multer');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const upload = multer({ storage: multer.memoryStorage() });
 
-app.use(express.json({ limit: '10mb' }));
 app.use(express.static('public'));
 
-app.post('/api/obfuscate', (req, res) => {
-    const { code, preset, seed, luaVersion } = req.body;
+app.post('/api/obfuscate', upload.single('file'), (req, res) => {
+    if (!req.file) return res.status(400).json({ error: "Arquivo ausente." });
 
-    if (!code) return res.status(400).json({ error: "Código ausente." });
+    const { preset, seed, luaVersion } = req.body;
+    const code = req.file.buffer.toString('utf8');
+    
+    if (!code.trim()) return res.status(400).json({ error: "O arquivo está vazio." });
 
     const fileId = crypto.randomBytes(8).toString('hex');
     const inputPath = path.join(__dirname, `temp_${fileId}.lua`);
@@ -37,7 +41,6 @@ app.post('/api/obfuscate', (req, res) => {
         if (fs.existsSync(inputPath)) fs.unlinkSync(inputPath);
 
         if (error) {
-            console.error(`Erro: ${stderr || error.message}`);
             return res.status(500).json({ error: stderr || "Falha na ofuscação." });
         }
 

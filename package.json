@@ -1,7 +1,7 @@
 {
   "name": "prometheus-web-obfuscator",
   "version": "1.0.0",
-  "description": "Interface Web para Prometheus Lua Obfuscator",
+  "description": "",
   "main": "server.js",
   "scripts": {
     "build": "mkdir -p bin && curl -R -O https://www.lua.org/ftp/lua-5.1.5.tar.gz && tar zxf lua-5.1.5.tar.gz && cd lua-5.1.5 && make linux && cp src/lua ../bin/lua && cd .. && rm -rf lua-5.1.5 lua-5.1.5.tar.gz && rm -rf prometheus && git clone https://github.com/prometheus-lua/Prometheus.git ./prometheus",

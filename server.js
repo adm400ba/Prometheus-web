@@ -21,22 +21,21 @@ app.post('/api/obfuscate', (req, res) => {
 
     fs.writeFileSync(inputPath, code);
 
-    // SOLUÇÃO PARA O RENDER: Usa o caminho absoluto onde o script de instalação baixou o Prometheus
-    const renderPath = '/opt/render/.local/bin/prometheus-lua';
+    // Agora buscamos o arquivo que foi copiado para a pasta do projeto durante o build
+    const localCli = path.join(__dirname, 'prometheus-cli');
     
-    // Se o arquivo existir lá (estamos no Render), usa ele. Se não (estamos no PC local), usa o comando global.
-    const cliCommand = fs.existsSync(renderPath) ? renderPath : 'prometheus-lua';
+    // Verifica: se estiver no Render, usa o executável local. Se estiver no seu PC, tenta o comando global.
+    const cliCommand = fs.existsSync(localCli) ? `./prometheus-cli` : 'prometheus-lua';
 
     let command = `${cliCommand} --preset ${preset || 'Medium'} --out "${outputPath}" "${inputPath}"`;
     if (seed) command += ` --seed ${seed}`;
 
-    // Executa usando o caminho direto
     exec(command, (error, stdout, stderr) => {
         if (fs.existsSync(inputPath)) fs.unlinkSync(inputPath);
 
         if (error) {
             console.error(`Erro de execução: ${stderr || error.message}`);
-            return res.status(500).json({ error: "Falha na ofuscação. Verifique o log do servidor." });
+            return res.status(500).json({ error: "Falha na ofuscação. Verifique a sintaxe do seu script." });
         }
 
         if (fs.existsSync(outputPath)) {

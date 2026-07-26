@@ -22,7 +22,7 @@
         
         .container { width: 100%; max-width: 1200px; background: var(--panel-bg); border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow: hidden; }
         .header { padding: 1.5rem 2rem; border-bottom: 1px solid var(--border); text-align: center; }
-        .header h1 { font-size: 1.5rem; font-weight: 700; color: var(--primary); display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .header h1 { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
         
         .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; padding: 1.5rem 2rem; background: #15171c; }
         .control-group { display: flex; flex-direction: column; gap: 0.5rem; }
@@ -35,23 +35,27 @@
         .editor-container { background: var(--panel-bg); display: flex; flex-direction: column; }
         .editor-header { padding: 0.75rem 2rem; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: #1c1f26; border-bottom: 1px solid var(--border); }
         
+        /* Upload Area Styles */
+        .upload-area { height: 400px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; text-align: center; background: var(--panel-bg); border: 2px dashed var(--border); margin: 1.5rem; border-radius: 8px; transition: border 0.2s, background 0.2s; }
+        .upload-area:hover { border-color: var(--primary); background: #1f232b; }
+        .upload-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.7; }
+        
         textarea { width: 100%; height: 400px; background: var(--panel-bg); color: #a5b4fc; border: none; padding: 1.5rem 2rem; font-family: 'Fira Code', monospace; font-size: 0.9rem; resize: none; outline: none; }
-        textarea::placeholder { color: #475569; }
         
         .actions { padding: 1.5rem 2rem; display: flex; justify-content: space-between; align-items: center; background: var(--panel-bg); gap: 1rem; flex-wrap: wrap; }
         .main-btn { background: var(--primary); color: white; border: none; padding: 0.85rem 2.5rem; border-radius: 6px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: background 0.2s; flex-grow: 1; max-width: 300px; }
         .main-btn:hover { background: var(--primary-hover); }
         .main-btn:disabled { background: #475569; cursor: not-allowed; }
         
-        .output-actions { display: flex; gap: 1rem; display: none; /* Hidden until obfuscation is done */ }
-        .secondary-btn { background: transparent; color: var(--text-main); border: 1px solid var(--border); padding: 0.75rem 1.5rem; border-radius: 6px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
-        .secondary-btn:hover { background: var(--bg-color); border-color: var(--text-muted); }
+        .output-actions { display: flex; gap: 1rem; display: none; }
+        .secondary-btn { background: var(--bg-color); color: var(--text-main); border: 1px solid var(--border); padding: 0.75rem 1.5rem; border-radius: 6px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+        .secondary-btn:hover { border-color: var(--text-muted); }
         .btn-success { background: var(--success); border-color: var(--success); color: #fff; }
 
         @media (max-width: 800px) {
             body { padding: 1rem; }
             .editors { grid-template-columns: 1fr; }
-            textarea { height: 250px; }
+            .upload-area, textarea { height: 250px; margin: 1rem; width: auto; }
             .actions { flex-direction: column; align-items: stretch; }
             .main-btn { max-width: 100%; }
             .output-actions { width: 100%; justify-content: stretch; }
@@ -63,19 +67,12 @@
 
 <div class="container">
     <div class="header">
-        <h1>Prometheus Luau</h1>
+        <h1>Prometheus Luau Obfuscator</h1>
     </div>
 
     <div class="controls">
         <div class="control-group">
-            <label>Versão Lua</label>
-            <select id="luaVersion">
-                <option value="luau" selected>Luau (Roblox)</option>
-                <option value="lua51">Lua 5.1</option>
-            </select>
-        </div>
-        <div class="control-group">
-            <label>Nível de Ofuscação (Preset)</label>
+            <label>Nível de Ofuscação</label>
             <select id="preset">
                 <option value="Weak">Weak (Fraco)</option>
                 <option value="Medium" selected>Medium (Recomendado)</option>
@@ -84,54 +81,77 @@
         </div>
         <div class="control-group">
             <label>Seed Customizada (Opcional)</label>
-            <input type="text" id="seed" placeholder="Ex: 123456789">
+            <input type="text" id="seed" placeholder="Deixe em branco para aleatório">
         </div>
     </div>
 
     <div class="editors">
         <div class="editor-container">
-            <div class="editor-header">CÓDIGO ORIGINAL</div>
-            <textarea id="inputCode" placeholder="Cole seu código aqui..."></textarea>
+            <div class="editor-header">1. SELECIONE O ARQUIVO (.LUA)</div>
+            <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+                <div class="upload-icon">📁</div>
+                <h3 id="fileName" style="margin-bottom: 10px;">Nenhum arquivo selecionado</h3>
+                <p style="color: var(--text-muted); font-size: 0.85rem;">Clique para selecionar ou arraste um arquivo</p>
+                <input type="file" id="fileInput" accept=".lua,.txt" style="display: none;">
+            </div>
         </div>
         <div class="editor-container">
-            <div class="editor-header">CÓDIGO OFUSCADO</div>
-            <textarea id="outputCode" readonly placeholder="O resultado aparecerá aqui..."></textarea>
+            <div class="editor-header">2. RESULTADO OFUSCADO</div>
+            <textarea id="outputCode" readonly placeholder="O código protegido aparecerá aqui após o processamento..."></textarea>
         </div>
     </div>
 
     <div class="actions">
-        <button class="main-btn" id="obfuscateBtn" onclick="obfuscateCode()">Ofuscar Código</button>
+        <button class="main-btn" id="obfuscateBtn" onclick="obfuscateCode()">Ofuscar Arquivo</button>
         
         <div class="output-actions" id="outputActions">
             <button class="secondary-btn" id="copyBtn" onclick="copyCode()">Copiar Código</button>
-            <button class="secondary-btn btn-success" id="downloadBtn" onclick="downloadCode()">Baixar .lua</button>
+            <button class="secondary-btn btn-success" id="downloadBtn" onclick="downloadCode()">Baixar Script</button>
         </div>
     </div>
 </div>
 
 <script>
+    let currentFileContent = "";
+    let originalFileName = "script";
+
+    // Lida com a seleção do arquivo
+    document.getElementById('fileInput').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        document.getElementById('fileName').innerText = file.name;
+        document.getElementById('fileName').style.color = 'var(--primary)';
+        originalFileName = file.name.replace(/\.[^/.]+$/, ""); // Pega o nome sem extensão
+        
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+            currentFileContent = evt.target.result;
+        };
+        reader.readAsText(file);
+    });
+
     async function obfuscateCode() {
-        const inputCode = document.getElementById('inputCode').value;
-        const luaVersion = document.getElementById('luaVersion').value;
         const preset = document.getElementById('preset').value;
         const seed = document.getElementById('seed').value;
         const btn = document.getElementById('obfuscateBtn');
         const outputCode = document.getElementById('outputCode');
         const outputActions = document.getElementById('outputActions');
 
-        if (!inputCode.trim()) return alert("Por favor, insira algum código para ofuscar.");
+        if (!currentFileContent) {
+            return alert("Por favor, selecione um arquivo .lua primeiro clicando na área de upload.");
+        }
 
         btn.disabled = true;
-        btn.innerText = "Ofuscando...";
-        outputCode.value = "Processando no servidor... aguarde.";
+        btn.innerText = "Processando...";
+        outputCode.value = "Ofuscando no servidor...\nIsso pode levar alguns segundos dependendo do tamanho do arquivo.";
         outputActions.style.display = "none";
 
         try {
-            // Chama a API do nosso backend Node.js
             const response = await fetch('/api/obfuscate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ code: inputCode, version: luaVersion, preset: preset, seed: seed })
+                body: JSON.stringify({ code: currentFileContent, preset: preset, seed: seed })
             });
 
             const data = await response.json();
@@ -140,14 +160,14 @@
                 outputCode.value = "ERRO: " + data.error;
             } else {
                 outputCode.value = data.obfuscatedCode;
-                outputActions.style.display = "flex"; // Mostra os botões de Copiar/Baixar
+                outputActions.style.display = "flex"; 
             }
         } catch (err) {
-            outputCode.value = "Falha ao conectar com o servidor.";
+            outputCode.value = "Falha de conexão com o servidor. Tente novamente.";
         }
 
         btn.disabled = false;
-        btn.innerText = "Ofuscar Código";
+        btn.innerText = "Ofuscar Arquivo";
     }
 
     function copyCode() {
@@ -167,7 +187,8 @@
         
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'obfuscated_script.lua';
+        // Salva o arquivo com _obfuscated no final (ex: meujogo_obfuscated.lua)
+        a.download = `${originalFileName}_obfuscated.lua`; 
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);

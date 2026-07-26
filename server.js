@@ -21,16 +21,18 @@ app.post('/api/obfuscate', (req, res) => {
 
     fs.writeFileSync(inputPath, code);
 
-    // Agora buscamos o arquivo que foi copiado para a pasta do projeto durante o build
-    const localCli = path.join(__dirname, 'prometheus-cli');
-    
-    // Verifica: se estiver no Render, usa o executável local. Se estiver no seu PC, tenta o comando global.
-    const cliCommand = fs.existsSync(localCli) ? `./prometheus-cli` : 'prometheus-lua';
+    const localCli = path.join(__dirname, 'bin', 'prometheus-cli');
+    const cliCommand = fs.existsSync(localCli) ? localCli : 'prometheus-lua';
 
     let command = `${cliCommand} --preset ${preset || 'Medium'} --out "${outputPath}" "${inputPath}"`;
     if (seed) command += ` --seed ${seed}`;
 
-    exec(command, (error, stdout, stderr) => {
+    // Adiciona a pasta bin local ao PATH para que o Prometheus ache o interpretador Lua
+    const env = Object.assign({}, process.env);
+    const binPath = path.join(__dirname, 'bin');
+    env.PATH = `${binPath}:${env.PATH}`;
+
+    exec(command, { env }, (error, stdout, stderr) => {
         if (fs.existsSync(inputPath)) fs.unlinkSync(inputPath);
 
         if (error) {

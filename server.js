@@ -7,7 +7,6 @@ const crypto = require('crypto');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Aumenta o limite para 10MB para suportar scripts Lua muito grandes
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static('public'));
 
@@ -22,19 +21,21 @@ app.post('/api/obfuscate', (req, res) => {
 
     fs.writeFileSync(inputPath, code);
 
-    let command = `prometheus-lua --preset ${preset || 'Medium'} --out "${outputPath}" "${inputPath}"`;
+    // SOLUÇÃO PARA O RENDER: Usa o caminho absoluto onde o script de instalação baixou o Prometheus
+    const renderPath = '/opt/render/.local/bin/prometheus-lua';
+    
+    // Se o arquivo existir lá (estamos no Render), usa ele. Se não (estamos no PC local), usa o comando global.
+    const cliCommand = fs.existsSync(renderPath) ? renderPath : 'prometheus-lua';
+
+    let command = `${cliCommand} --preset ${preset || 'Medium'} --out "${outputPath}" "${inputPath}"`;
     if (seed) command += ` --seed ${seed}`;
 
-    // CORREÇÃO PARA O RENDER: Adiciona a pasta bin local ao PATH do ambiente
-    const env = Object.assign({}, process.env);
-    env.PATH = `${env.PATH}:/opt/render/.local/bin`;
-
-    // Executa a ofuscação passando o novo ambiente (env)
-    exec(command, { env }, (error, stdout, stderr) => {
+    // Executa usando o caminho direto
+    exec(command, (error, stdout, stderr) => {
         if (fs.existsSync(inputPath)) fs.unlinkSync(inputPath);
 
         if (error) {
-            console.error(`Erro de execução: ${stderr}`);
+            console.error(`Erro de execução: ${stderr || error.message}`);
             return res.status(500).json({ error: "Falha na ofuscação. Verifique o log do servidor." });
         }
 

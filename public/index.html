@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prometheus Obfuscator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f1115;
+            --panel-bg: #1a1d24;
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --success: #10b981;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #2d313a;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-main); padding: 2rem; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        
+        .container { width: 100%; max-width: 1200px; background: var(--panel-bg); border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow: hidden; }
+        .header { padding: 1.5rem 2rem; border-bottom: 1px solid var(--border); text-align: center; }
+        .header h1 { font-size: 1.5rem; font-weight: 700; color: var(--primary); display: flex; align-items: center; justify-content: center; gap: 10px; }
+        
+        .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; padding: 1.5rem 2rem; background: #15171c; }
+        .control-group { display: flex; flex-direction: column; gap: 0.5rem; }
+        .control-group label { font-size: 0.85rem; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        select, input { background: var(--bg-color); color: var(--text-main); border: 1px solid var(--border); padding: 0.75rem; border-radius: 6px; font-size: 0.95rem; outline: none; transition: border 0.2s; }
+        select:focus, input:focus { border-color: var(--primary); }
+        
+        .editors { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border-bottom: 1px solid var(--border); }
+        .editor-container { background: var(--panel-bg); display: flex; flex-direction: column; }
+        .editor-header { padding: 0.75rem 2rem; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); background: #1c1f26; border-bottom: 1px solid var(--border); }
+        
+        textarea { width: 100%; height: 400px; background: var(--panel-bg); color: #a5b4fc; border: none; padding: 1.5rem 2rem; font-family: 'Fira Code', monospace; font-size: 0.9rem; resize: none; outline: none; }
+        textarea::placeholder { color: #475569; }
+        
+        .actions { padding: 1.5rem 2rem; display: flex; justify-content: space-between; align-items: center; background: var(--panel-bg); gap: 1rem; flex-wrap: wrap; }
+        .main-btn { background: var(--primary); color: white; border: none; padding: 0.85rem 2.5rem; border-radius: 6px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: background 0.2s; flex-grow: 1; max-width: 300px; }
+        .main-btn:hover { background: var(--primary-hover); }
+        .main-btn:disabled { background: #475569; cursor: not-allowed; }
+        
+        .output-actions { display: flex; gap: 1rem; display: none; /* Hidden until obfuscation is done */ }
+        .secondary-btn { background: transparent; color: var(--text-main); border: 1px solid var(--border); padding: 0.75rem 1.5rem; border-radius: 6px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+        .secondary-btn:hover { background: var(--bg-color); border-color: var(--text-muted); }
+        .btn-success { background: var(--success); border-color: var(--success); color: #fff; }
+
+        @media (max-width: 800px) {
+            body { padding: 1rem; }
+            .editors { grid-template-columns: 1fr; }
+            textarea { height: 250px; }
+            .actions { flex-direction: column; align-items: stretch; }
+            .main-btn { max-width: 100%; }
+            .output-actions { width: 100%; justify-content: stretch; }
+            .output-actions button { flex: 1; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>Prometheus Luau</h1>
+    </div>
+
+    <div class="controls">
+        <div class="control-group">
+            <label>Versão Lua</label>
+            <select id="luaVersion">
+                <option value="luau" selected>Luau (Roblox)</option>
+                <option value="lua51">Lua 5.1</option>
+            </select>
+        </div>
+        <div class="control-group">
+            <label>Nível de Ofuscação (Preset)</label>
+            <select id="preset">
+                <option value="Weak">Weak (Fraco)</option>
+                <option value="Medium" selected>Medium (Recomendado)</option>
+                <option value="Strong">Strong (Forte/Lento)</option>
+            </select>
+        </div>
+        <div class="control-group">
+            <label>Seed Customizada (Opcional)</label>
+            <input type="text" id="seed" placeholder="Ex: 123456789">
+        </div>
+    </div>
+
+    <div class="editors">
+        <div class="editor-container">
+            <div class="editor-header">CÓDIGO ORIGINAL</div>
+            <textarea id="inputCode" placeholder="Cole seu código aqui..."></textarea>
+        </div>
+        <div class="editor-container">
+            <div class="editor-header">CÓDIGO OFUSCADO</div>
+            <textarea id="outputCode" readonly placeholder="O resultado aparecerá aqui..."></textarea>
+        </div>
+    </div>
+
+    <div class="actions">
+        <button class="main-btn" id="obfuscateBtn" onclick="obfuscateCode()">Ofuscar Código</button>
+        
+        <div class="output-actions" id="outputActions">
+            <button class="secondary-btn" id="copyBtn" onclick="copyCode()">Copiar Código</button>
+            <button class="secondary-btn btn-success" id="downloadBtn" onclick="downloadCode()">Baixar .lua</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    async function obfuscateCode() {
+        const inputCode = document.getElementById('inputCode').value;
+        const luaVersion = document.getElementById('luaVersion').value;
+        const preset = document.getElementById('preset').value;
+        const seed = document.getElementById('seed').value;
+        const btn = document.getElementById('obfuscateBtn');
+        const outputCode = document.getElementById('outputCode');
+        const outputActions = document.getElementById('outputActions');
+
+        if (!inputCode.trim()) return alert("Por favor, insira algum código para ofuscar.");
+
+        btn.disabled = true;
+        btn.innerText = "Ofuscando...";
+        outputCode.value = "Processando no servidor... aguarde.";
+        outputActions.style.display = "none";
+
+        try {
+            // Chama a API do nosso backend Node.js
+            const response = await fetch('/api/obfuscate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code: inputCode, version: luaVersion, preset: preset, seed: seed })
+            });
+
+            const data = await response.json();
+
+            if (data.error) {
+                outputCode.value = "ERRO: " + data.error;
+            } else {
+                outputCode.value = data.obfuscatedCode;
+                outputActions.style.display = "flex"; // Mostra os botões de Copiar/Baixar
+            }
+        } catch (err) {
+            outputCode.value = "Falha ao conectar com o servidor.";
+        }
+
+        btn.disabled = false;
+        btn.innerText = "Ofuscar Código";
+    }
+
+    function copyCode() {
+        const output = document.getElementById('outputCode');
+        output.select();
+        document.execCommand('copy');
+        
+        const copyBtn = document.getElementById('copyBtn');
+        copyBtn.innerText = "Copiado!";
+        setTimeout(() => copyBtn.innerText = "Copiar Código", 2000);
+    }
+
+    function downloadCode() {
+        const output = document.getElementById('outputCode').value;
+        const blob = new Blob([output], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'obfuscated_script.lua';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+</script>
+</body>
+</html>
